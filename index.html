@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第十期飞桨黑客松 奖金查询</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: #f2f4f7;
+    color: #1f2937;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .hero {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: #fff;
+    padding: 56px 24px;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .hero .subtitle {
+    font-size: 15px;
+    opacity: 0.92;
+  }
+
+  .content {
+    flex: 1;
+    max-width: 760px;
+    width: 100%;
+    margin: -20px auto 0;
+    padding: 0 24px 40px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .query-card .label {
+    display: block;
+    font-size: 15px;
+    color: #374151;
+    margin-bottom: 10px;
+  }
+  .query-row {
+    display: flex;
+    gap: 12px;
+  }
+  input[type="text"] {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    background: #fff;
+  }
+  input[type="text"]:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+  button.primary {
+    padding: 0 28px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+    background: #2563eb;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .2s;
+    white-space: nowrap;
+  }
+  button.primary:hover { background: #1d4ed8; }
+
+  .id-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 22px;
+  }
+  .id-badge .label-tag {
+    font-size: 12px;
+    color: #6b7280;
+    background: transparent;
+    font-weight: 500;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 14px;
+  }
+
+  .detail-list {
+    border-top: 1px solid #f0f2f5;
+  }
+  .detail-head, .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px 4px;
+    border-bottom: 1px solid #f0f2f5;
+    gap: 16px;
+  }
+  .detail-head {
+    color: #9ca3af;
+    font-size: 14px;
+    padding: 12px 4px;
+  }
+  .detail-row .desc { flex: 1; line-height: 1.6; }
+  .detail-row .desc .source {
+    color: #374151;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .detail-row .desc .task {
+    color: #111827;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .detail-row .stars {
+    color: #f59e0b;
+    font-weight: 700;
+    white-space: nowrap;
+    font-size: 15px;
+  }
+  .star-icon { color: #f59e0b; }
+
+  .summary-box {
+    margin-top: 20px;
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 6px 20px;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #eef0f4;
+    font-size: 15px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .k { color: #4b5563; }
+  .summary-row .v { color: #111827; font-weight: 600; }
+  .summary-row .stars { color: #f59e0b; font-weight: 700; }
+  .summary-row .strike { color: #9ca3af; text-decoration: line-through; font-weight: 500; }
+  .summary-row.total .k { color: #111827; font-weight: 700; font-size: 16px; }
+  .summary-row.total .v { color: #2563eb; font-weight: 700; font-size: 22px; }
+
+  .msg {
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 15px;
+  }
+  .msg.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+  .msg.info  { background: #f9fafb; color: #4b5563; border: 1px solid #e5e7eb; }
+
+  .footer {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+    padding: 24px 16px 32px;
+  }
+  .footer .vx { color: #374151; font-weight: 600; }
+
+  @media (max-width: 520px) {
+    .hero { padding: 40px 20px; }
+    .hero h1 { font-size: 22px; }
+    .card { padding: 20px; }
+    .query-row { flex-direction: column; }
+    button.primary { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>第十期飞桨黑客松 奖金查询</h1>
+  <div class="subtitle">输入手机号查询您的个人获奖详情</div>
+</div>
+
+<div class="content">
+  <div class="card query-card">
+    <label class="label" for="phoneInput">手机号</label>
+    <div class="query-row">
+      <input type="text" id="phoneInput" placeholder="请输入您的手机号" maxlength="11" inputmode="numeric">
+      <button class="primary" onclick="query()">查询</button>
+    </div>
+  </div>
+
+  <div id="result"></div>
+</div>
+
+<div class="footer">
+  有问题联系 vx：<span class="vx">LB2707</span>
+</div>
+
+<script>
+const data = [
+  { phone: "18250544492", github: "@zhengningch", email: "ningzhuozr@163.com", total: 11, bonus: 21000, afterTax: 16800, note: "",
+    items: [
+      { source: "OCR决赛", desc: "真实研究场景的古籍刻本识别（第1名）", stars: 10 },
+      { source: "OCR数据贡献奖", desc: "晋级决赛&数据贡献奖", stars: 1 }
+    ] },
+  { phone: "17513125221", github: "@JackXfmax", email: "542844242@qq.com", total: 9, bonus: 13000, afterTax: 10400, note: "",
+    items: [
+      { source: "OCR决赛", desc: "真实场景下的藏文OCR识别（第2名）", stars: 8 },
+      { source: "OCR数据贡献奖", desc: "晋级决赛&数据贡献奖", stars: 1 }
+    ] },
+  { phone: "18714755030", github: "@lihongboTHU", email: "lhbthu399@gmail.com", total: 7, bonus: 9000, afterTax: 7200, note: "",
+    items: [
+      { source: "OCR决赛", desc: "IC芯片时序图到WaveDrom DSL的逆向转译（第3名）", stars: 6 },
+      { source: "OCR数据贡献奖", desc: "晋级决赛&数据贡献奖", stars: 1 }
+    ] },
+  { phone: "19828920196", github: "@nanxidajun", email: "guangwnan@163.com", total: 5, bonus: 5000, afterTax: 4000, note: "",
+    items: [
+      { source: "OCR决赛", desc: "彝文 OCR（第4名）", stars: 4 },
+      { source: "OCR数据贡献奖", desc: "晋级决赛&数据贡献奖", stars: 1 }
+    ] },
+  { phone: "18669706819", github: "@megemini", email: "megemini@outlook.com", total: 4, bonus: 5000, afterTax: 4000, note: "",
+    items: [
+      { source: "OCR决赛", desc: "微调 XFUND 与信息抽取（第5名）", stars: 3 },
+      { source: "OCR数据贡献奖", desc: "晋级决赛&数据贡献奖", stars: 1 }
+    ] },
+  { phone: "13830591240", github: "@ZhangJ83", email: "zhangjn83@mail2.sysu.edu.cn", total: 2, bonus: 2000, afterTax: 1600, note: "",
+    items: [
+      { source: "OCR决赛", desc: "电路原理图 OCR 识别（第7名）", stars: 2 }
+    ] },
+  { phone: "13933651108", github: "@snnh", email: "s2438137759@outlook.com", total: 1, bonus: 2000, afterTax: 1600, note: "",
+    items: [
+      { source: "OCR决赛", desc: "真实场景代码OCR（第8名）", stars: 1 }
+    ] },
+  { phone: "13230592021", github: "@2658183739", email: "2658183739@qq.com", total: 1, bonus: 2000, afterTax: 1600, note: "",
+    items: [
+      { source: "OCR决赛", desc: "有机化学结构式OCR（第9名）", stars: 1 }
+    ] },
+  { phone: "13728183561", github: "@wuheye06", email: "24012142@muc.edu.cn", total: 1, bonus: 1000, afterTax: 800, note: "",
+    items: [
+      { source: "OCR数据贡献奖", desc: "数据贡献奖", stars: 1 }
+    ] }
+];
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function render(r) {
+  const rows = r.items.map(it => `
+    <div class="detail-row">
+      <div class="desc">
+        <div class="source">${escapeHtml(it.source)}</div>
+        <div class="task">${escapeHtml(it.desc)}</div>
+      </div>
+      <div class="stars">${it.stars}<span class="star-icon">⭐</span></div>
+    </div>
+  `).join("");
+
+  return `
+    <div class="card">
+      <div class="id-badge"><span class="label-tag">ID</span> ${escapeHtml(r.github)}</div>
+
+      <div class="section-title">参与任务明细</div>
+      <div class="detail-list">
+        <div class="detail-head">
+          <div>来源 / 任务说明</div>
+          <div><span class="star-icon">⭐</span></div>
+        </div>
+        ${rows}
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-row">
+          <span class="k">总星星数</span>
+          <span class="stars">${r.total}<span class="star-icon">⭐</span></span>
+        </div>
+        <div class="summary-row">
+          <span class="k">税前奖金</span>
+          <span class="strike">¥${r.bonus.toLocaleString()}</span>
+        </div>
+        <div class="summary-row total">
+          <span class="k">税后实发（已扣 20%）</span>
+          <span class="v">¥${r.afterTax.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function query() {
+  const phone = document.getElementById("phoneInput").value.trim();
+  const box = document.getElementById("result");
+
+  if (!phone) {
+    box.innerHTML = '<div class="card"><div class="msg info">请输入手机号</div></div>';
+    return;
+  }
+  if (!/^\d{11}$/.test(phone)) {
+    box.innerHTML = '<div class="card"><div class="msg error">手机号格式不正确，请输入 11 位数字</div></div>';
+    return;
+  }
+  const record = data.find(d => d.phone === phone);
+  if (!record) {
+    box.innerHTML = '<div class="card"><div class="msg error">未查询到该手机号对应的奖金记录，请确认手机号或联系赛事运营</div></div>';
+    return;
+  }
+  box.innerHTML = render(record);
+}
+
+document.getElementById("phoneInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") query();
+});
+</script>
+</body>
+</html>
